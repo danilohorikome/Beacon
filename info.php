@@ -13,7 +13,7 @@
 
 			table {
     			border-collapse: collapse;
-    			width: 30%;
+    			width: 60%;
     			margin: 0 auto;
     			text-align: center;
     			position: relative;
@@ -21,9 +21,9 @@
 			}			
 
 			th, td {
-    			text-align: left;
-    			padding: 8px;
     			text-align: center;
+    			padding: 8px;
+    			
     			border: 1px solid #ddd;
 			}
 
@@ -48,7 +48,8 @@
 			$ip = gethostbyname('localhost');
 		?>
 
-		<img src='planta_hospital.png' alt="Planta Hospital" style="padding:10px;" />
+
+		<img src='planta_hospital_escola.png' alt="Planta Hospital" style="padding:10px width="600" height="500" ;" />
 
 		<?php //Script para pegar dados dos Beacons
 			define( 'MYSQL_HOST', 'localhost' );
@@ -69,24 +70,43 @@
 			}
 
 			//Query para pegar os últimos dados agrupado DEVICEID e MACADR
-			$sql = "SET sql_mode = ''";	
+			//$sql = "SET sql_mode = ''";	
+			$sql = "SELECT LOCALIZACAO, ENDERECO_MAC, DISTANCIA, DATA_HORA FROM INFO_BEACON
+WHERE DATA_HORA IN (SELECT MAX(DATA_HORA) FROM INFO_BEACON GROUP BY LOCALIZACAO, ENDERECO_MAC) GROUP BY LOCALIZACAO, ENDERECO_MAC";
 			$PDO->query($sql);
-			$sql = "SELECT MAX(DATA_HORA), LOCALIZACAO, ENDERECO_MAC, DISTANCIA FROM INFO_BEACON GROUP BY LOCALIZACAO, ENDERECO_MAC";	
+				
 			$sth = $PDO->prepare($sql);
 			$sth->execute();
 
 			$result = $sth->fetchAll(PDO::FETCH_ASSOC);
+			
 			$array_lenght = count($result); 
+			//echo '<pre>'; print_r($result); echo '</pre>';
 		?>
 
 		<table>
 			<tr>
-				<th>Beacon (Equipamento)</th>
-    			<th>Localização</th> 
+				<th>Equipamento</th>
+    			<th>Localização Atual</th>
+    			<th>Distância</th>
+    			<th>Erro</th>
+    			<th>Última Localização</th>
+    			<th>Data e Hora</th>
+
     		</tr>
     			
 			<?php
-				//Imprime a localização dos Beacons
+
+				$sala_anterior1 = "Sala2";
+				$sala_atual1 = "Sala3" ;
+				$sala_anterior2 = "Sala4";
+				$sala_atual2 = "Sala5";
+				/*$sala_anterior1 = $result[0]['LOCALIZACAO'];
+				$sala_atual1 = $result[0]['LOCALIZACAO'];
+				$sala_anterior2 = $result[0]['LOCALIZACAO'];
+				$sala_atual2 = $result[0]['LOCALIZACAO'];*/
+
+				//Compara as distâncias para um mesmo mac
 				for($i = 0; $i < $array_lenght; $i++)
 				{
 					$flag_dist = 1;
@@ -105,9 +125,64 @@
 					if($flag_dist == 1)
 					{
 						echo "<tr>";
-						echo "<td>" . $result[$i]['ENDERECO_MAC'] . "</td>" ;
-						echo "<td>" . $result[$i]['LOCALIZACAO'] . "</td>";
-						echo "</tr>";
+
+						if($result[$i]['ENDERECO_MAC'] == '0CF3EE031CB2')
+						{
+							echo "<td>" . "B1 - Desfibrilador" . "</td>";
+
+						    if($result[$i]['LOCALIZACAO'] != $sala_atual1)
+						    {
+						    	$sala_anterior1 = $sala_atual1;
+						    	$sala_atual1 = $result[$i]['LOCALIZACAO'];
+
+						    }
+						    echo "<td>" . $result[$i]['LOCALIZACAO'] . "</td>";
+							echo "<td>" . $result[$i]['DISTANCIA'] . " m" . "</td>";
+							//number_format($result[$i]['DISTANCIA'], 2)
+							if($result[$i]['DISTANCIA'] <= 1)
+								echo "<td>" . " +/- 0.3 m" . "</td>";
+							else if($result[$i]['DISTANCIA'] <=4 && $result[$i]['DISTANCIA'] > 1)
+								echo "<td>" . "+/- 0.7 m" . "</td>";
+							else if($result[$i]['DISTANCIA'] <=6 && $result[$i]['DISTANCIA'] > 4)
+								echo "<td>" . "+/- 2.5 m" . "</td>";
+							else if($result[$i]['DISTANCIA'] <=10 && $result[$i]['DISTANCIA'] > 6)
+								echo "<td>" . "+/- 4.0 m" . "</td>";
+							else 
+								echo "<td>" . "+/- 6.0 metros" . "</td>";
+
+							echo "<td>" . $sala_anterior1 . "</td>";	
+							echo "<td>" . $result[$i]['DATA_HORA'] . "</td>";
+							echo "</tr>";
+
+						}
+
+						else if($result[$i]['ENDERECO_MAC'] == '78A5048C47AF')
+						{
+							echo "<td>" . "B2 - Eletrocardiógrafo" . "</td>";
+						    if($result[$i]['LOCALIZACAO'] != $sala_atual2)
+						    {
+						    	$sala_anterior2 = $sala_atual2;
+						    	$sala_atual2 = $result[$i]['LOCALIZACAO'];
+
+						    }
+							echo "<td>" . $result[$i]['LOCALIZACAO'] . "</td>";
+							echo "<td>" . $result[$i]['DISTANCIA'] . " m" . "</td>";
+
+							if($result[$i]['DISTANCIA'] <= 1)
+								echo "<td>" . " +/- 0.3 m" . "</td>";
+							else if($result[$i]['DISTANCIA'] <=4 && $result[$i]['DISTANCIA'] > 1)
+								echo "<td>" . "+/- 0.7 m" . "</td>";
+							else if($result[$i]['DISTANCIA'] <=6 && $result[$i]['DISTANCIA'] > 4)
+								echo "<td>" . "+/- 2.5 m" . "</td>";
+							else if($result[$i]['DISTANCIA'] <=10 && $result[$i]['DISTANCIA'] > 6)
+								echo "<td>" . "+/- 4.0 m" . "</td>";
+							else 
+								echo "<td>" . "+/- 6.0 m" . "</td>";
+
+							echo "<td>" . $sala_anterior2 . "</td>";
+							echo "<td>" . $result[$i]['DATA_HORA'] . "</td>";
+							echo "</tr>";
+						}
 					}
 				}
 
