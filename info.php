@@ -38,6 +38,47 @@
 				display: block;
     			margin: 0 auto;
 			}
+
+			#b1Sala1 {
+			  z-index: 100;
+			  position: absolute;
+			  color: red;
+			  font-size: 25px;
+			  font-weight: bold;
+			  left: 515px;
+			  top: 180px;
+			}
+
+			#b1Sala2 {
+			  z-index: 100;
+			  position: absolute;
+			  color: red;
+			  font-size: 25px;
+			  font-weight: bold;
+			  left: 615px;
+			  top: 180px;
+			}
+
+			#b2Sala1 {
+			  z-index: 100;
+			  position: absolute;
+			  color: red;
+			  font-size: 25px;
+			  font-weight: bold;
+			  left: 515px;
+			  top: 140px;
+			}
+
+			#b2Sala2 {
+			  z-index: 100;
+			  position: absolute;
+			  color: red;
+			  font-size: 25px;
+			  font-weight: bold;
+			  left: 615px;
+			  top: 140px;
+			}
+
 		</style>
 	</head>
 
@@ -72,7 +113,8 @@
 			//Query para pegar os últimos dados agrupado DEVICEID e MACADR
 			//$sql = "SET sql_mode = ''";	
 			$sql = "SELECT LOCALIZACAO, ENDERECO_MAC, DISTANCIA, DATA_HORA FROM INFO_BEACON
-WHERE DATA_HORA IN (SELECT MAX(DATA_HORA) FROM INFO_BEACON GROUP BY LOCALIZACAO, ENDERECO_MAC) GROUP BY LOCALIZACAO, ENDERECO_MAC";
+					WHERE DATA_HORA IN (SELECT MAX(DATA_HORA) FROM INFO_BEACON GROUP BY LOCALIZACAO, ENDERECO_MAC) 
+					GROUP BY LOCALIZACAO, ENDERECO_MAC";
 			$PDO->query($sql);
 				
 			$sth = $PDO->prepare($sql);
@@ -82,6 +124,7 @@ WHERE DATA_HORA IN (SELECT MAX(DATA_HORA) FROM INFO_BEACON GROUP BY LOCALIZACAO,
 			
 			$array_lenght = count($result); 
 			//echo '<pre>'; print_r($result); echo '</pre>';
+
 		?>
 
 		<table>
@@ -96,15 +139,11 @@ WHERE DATA_HORA IN (SELECT MAX(DATA_HORA) FROM INFO_BEACON GROUP BY LOCALIZACAO,
     		</tr>
     			
 			<?php
-
-				$sala_anterior1 = "Sala2";
-				$sala_atual1 = "Sala3" ;
-				$sala_anterior2 = "Sala4";
-				$sala_atual2 = "Sala5";
-				/*$sala_anterior1 = $result[0]['LOCALIZACAO'];
+				
+				$sala_anterior1 = $result[0]['LOCALIZACAO'];
 				$sala_atual1 = $result[0]['LOCALIZACAO'];
 				$sala_anterior2 = $result[0]['LOCALIZACAO'];
-				$sala_atual2 = $result[0]['LOCALIZACAO'];*/
+				$sala_atual2 = $result[0]['LOCALIZACAO'];
 
 				//Compara as distâncias para um mesmo mac
 				for($i = 0; $i < $array_lenght; $i++)
@@ -134,11 +173,21 @@ WHERE DATA_HORA IN (SELECT MAX(DATA_HORA) FROM INFO_BEACON GROUP BY LOCALIZACAO,
 						    {
 						    	$sala_anterior1 = $sala_atual1;
 						    	$sala_atual1 = $result[$i]['LOCALIZACAO'];
-
 						    }
+
+						    if($sala_atual1 == 'Sala1')
+						    {
+						    	echo "<p id='b1Sala1'>" . "B1" . "</p>";
+						    }
+
+						    else if($sala_atual1 == 'Sala2')
+						    {
+						    	echo "<p id='b1Sala2'>" . "B1" . "</p>";
+						    }
+
 						    echo "<td>" . $result[$i]['LOCALIZACAO'] . "</td>";
-							echo "<td>" . $result[$i]['DISTANCIA'] . " m" . "</td>";
-							//number_format($result[$i]['DISTANCIA'], 2)
+							echo "<td>" . number_format($result[$i]['DISTANCIA'],2) . " m" . "</td>";
+
 							if($result[$i]['DISTANCIA'] <= 1)
 								echo "<td>" . " +/- 0.3 m" . "</td>";
 							else if($result[$i]['DISTANCIA'] <=4 && $result[$i]['DISTANCIA'] > 1)
@@ -159,14 +208,26 @@ WHERE DATA_HORA IN (SELECT MAX(DATA_HORA) FROM INFO_BEACON GROUP BY LOCALIZACAO,
 						else if($result[$i]['ENDERECO_MAC'] == '78A5048C47AF')
 						{
 							echo "<td>" . "B2 - Eletrocardiógrafo" . "</td>";
+
 						    if($result[$i]['LOCALIZACAO'] != $sala_atual2)
 						    {
 						    	$sala_anterior2 = $sala_atual2;
 						    	$sala_atual2 = $result[$i]['LOCALIZACAO'];
 
 						    }
+
+						    if($sala_atual2 == 'Sala1')
+						    {
+						    	echo "<p id='b2Sala1'>" . "B2" . "</p>";
+						    }
+
+						    else if($sala_atual2 == 'Sala2')
+						    {
+						    	echo "<p id='b2Sala2'>" . "B2" . "</p>";
+						    }
+
 							echo "<td>" . $result[$i]['LOCALIZACAO'] . "</td>";
-							echo "<td>" . $result[$i]['DISTANCIA'] . " m" . "</td>";
+							echo "<td>" . number_format($result[$i]['DISTANCIA'],2) . " m" . "</td>";
 
 							if($result[$i]['DISTANCIA'] <= 1)
 								echo "<td>" . " +/- 0.3 m" . "</td>";
