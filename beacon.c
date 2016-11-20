@@ -33,7 +33,7 @@ int iniciaSerial(char* msg)
   //Envia comando para o bluetooth
   serialPuts(serial_aux,"AT+DISI?");
   serialFlush(serial_aux);
-  delay(2000);
+  delay(4000);
   
   //Se ocorrer erro ao receber dados da serial
   if(serialDataAvail(serial_aux) == -1)
@@ -53,7 +53,7 @@ int iniciaSerial(char* msg)
     }
     serialFlush(serial_aux);
     msg[aux] = 0;
-    //printf("\n%s\n", msg);
+    printf("\n%s\n", msg);
     return 1;
   }
 }
@@ -109,7 +109,7 @@ double calculaDist(int rssi, int txpower)
 
 /*
 *  @desc Descarta os 3 valores extremos superiores e inferiores e realiza média das distâncias
-*  @param vet: vetor com 10 volres de distância, 
+*  @param vet: vetor com 10 valores de distância, 
 *  @return distância média
 */
 double distanciaRecalc(double* vet) 
@@ -130,13 +130,14 @@ double distanciaRecalc(double* vet)
       }
     }
   }
-
-  //Realiza a média dos 6 valores de distância menos polarizados
-  for(i=3; i<6; i++)
-  {
-    temp = vet[i] + vet[i+1];
-  }
   
+  temp = 0;
+  //Realiza a média dos 6 valores de distância menos polarizados
+  for(i=2; i<8; i++)
+  {
+    temp = temp + vet[i]; 
+  }
+  //printf("dist = %f",temp/6);
   return temp / 6;
 }
 
@@ -162,9 +163,9 @@ void baseDados()
   //Realiza a inserção dos dados na tabela
   if(flag_vetor1 == 10)
     sprintf(insert,"INSERT INTO info_beacon (Localizacao,Endereco_MAC,Distancia) VALUES ('%s','%s',%f)","Sala1","78A5048C47AF",distanciaRecalc(vetor_aux1));
-  /*if(flag_vetor2 == 10)
-    sprintf(insert,"INSERT INTO info_beacon (Localizacao,Endereco_MAC,Distancia) VALUES ('%s','%s',%f)","Sala1","mac",distanciaRecalc(vetor_aux2));
-  if(flag_vetor3 == 10)
+  if(flag_vetor2 == 10)
+    sprintf(insert,"INSERT INTO info_beacon (Localizacao,Endereco_MAC,Distancia) VALUES ('%s','%s',%f)","Sala1","0CF3EE031CB2",distanciaRecalc(vetor_aux2));
+  /*if(flag_vetor3 == 10)
     sprintf(insert,"INSERT INTO info_beacon (Localizacao,Endereco_MAC,Distancia) VALUES ('%s','%s',%f)","Sala1","mac",distanciaRecalc(vetor_aux3));
   */
 
@@ -215,7 +216,7 @@ void formataString(char* msg, int numBeacons)
 
 
   //for(aux=0;aux<numBeacons;aux++)
-  //printf("\nMAC: %s Meas.Power: %s RSSI: %s\n",mac[aux],txPower[aux],rssi[aux]);
+  //printf("\nMAC: %s Meas.Power: %s RSSI: %s\n",mac[aux],txPower[aux]-256,rssi[aux]);
 
   //Faz conversão de Char para Int/Float
   for(aux = 0; aux < numBeacons; aux++)
@@ -226,7 +227,7 @@ void formataString(char* msg, int numBeacons)
   }
 
   for(aux = 0; aux < numBeacons; aux++)
-    printf("Beacon: %s | RSSI: %d | TxPower: %d | Distancia: %lf\n", mac[aux], rssi_int[aux], txPower_int[aux], dist[aux]);
+    printf("Beacon: %s | RSSI: %d | TxPower: %d | Distancia: %lf\n", mac[aux], rssi_int[aux], txPower_int[aux]-256, dist[aux]);
 
   //Insere nos vetores globais de cada beacon a distância respectiva
   for(aux = 0; aux < numBeacons; aux++)
@@ -237,7 +238,7 @@ void formataString(char* msg, int numBeacons)
       flag_vetor1++;
     }
     
-    else if(strcmp("mac2",mac[aux]) == 0)
+    else if(strcmp("0CF3EE031CB2",mac[aux]) == 0)
     {
       vetor_aux2[flag_vetor2] = dist[aux];
       flag_vetor2++;
@@ -255,9 +256,9 @@ void formataString(char* msg, int numBeacons)
   if(flag_vetor1 == 10 || flag_vetor2 == 10 || flag_vetor3 == 10)
   {
     baseDados();
-    flag_vetor1 = 0;
-    flag_vetor2 = 0;
-    flag_vetor3 = 0;
+    if(flag_vetor1 == 10) flag_vetor1 = 5;
+    if(flag_vetor2 == 10) flag_vetor2 = 9;
+    if(flag_vetor3 == 10) flag_vetor3 = 9;
     memset(mac, 0, numBeacons);
   }
 }
